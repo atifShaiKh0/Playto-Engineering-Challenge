@@ -7,22 +7,24 @@ WORKDIR /app
 
 # Install system dependencies required to build some Python packages
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential libpq-dev \
+    && apt-get install -y --no-install-recommends build-essential libpq-dev git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install them
-COPY requirements.txt /tmp/requirements.txt
+COPY backend/requirements.txt /tmp/requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r /tmp/requirements.txt
 
-# Copy entire project (assuming Dockerfile is in backend/ and context is backend/)
+# Copy entire project
 COPY . /app
 
+WORKDIR /app/backend
+
 # Make entrypoint executable
-RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/backend/entrypoint.sh
 
 # Collect static files (optional, but good practice)
 RUN python manage.py collectstatic --noinput || true
 
 # Use entrypoint script to run migrations then gunicorn
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/backend/entrypoint.sh"]
