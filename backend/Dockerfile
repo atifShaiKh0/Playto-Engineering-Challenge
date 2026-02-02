@@ -20,8 +20,11 @@ COPY . /app
 
 WORKDIR /app/backend
 
-# Run migrations at build time if possible (ignore failures)
-RUN python manage.py migrate --noinput || true
+# Make entrypoint executable
+RUN chmod +x /app/backend/entrypoint.sh
 
-# Use gunicorn in production; Railway provides $PORT
-CMD ["gunicorn", "config.wsgi", "--bind", "0.0.0.0:${PORT:-8000}"]
+# Collect static files (optional, but good practice)
+RUN python manage.py collectstatic --noinput || true
+
+# Use entrypoint script to run migrations then gunicorn
+ENTRYPOINT ["/app/backend/entrypoint.sh"]
