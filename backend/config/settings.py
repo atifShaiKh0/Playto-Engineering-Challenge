@@ -80,13 +80,36 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if config('DATABASE_URL', default=None):
-    # Production: Use PostgreSQL via DATABASE_URL
-    import dj_database_url
+# if config('DATABASE_URL', default=None):
+#     # Production: Use PostgreSQL via DATABASE_URL
+#     import dj_database_url
+#     DATABASES = {
+#         'default': dj_database_url.config(
+#             default=config('DATABASE_URL'),
+#             conn_max_age=600
+#         )
+#     }
+# else:
+#     # Development: Use SQLite
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+#     }
+
+import dj_database_url
+
+# Railway automatically provides DATABASE_URL when PostgreSQL is added
+database_url = config('DATABASE_URL', default=None)
+
+if database_url:
+    # Production: Use PostgreSQL
     DATABASES = {
         'default': dj_database_url.config(
-            default=config('DATABASE_URL'),
-            conn_max_age=600
+            default=database_url,
+            conn_max_age=600,
+            disable_ssl_certificate_validation=True  # Railway's PostgreSQL
         )
     }
 else:
@@ -97,7 +120,6 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
